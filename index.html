@@ -4,81 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIR 모델 시뮬레이터</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
-    :root {
-      --bg: #f9fafb;
-      --card: #ffffff;
-      --accent: #3b82f6;
-      --text: #1f2937;
-      --border: #e5e7eb;
-    }
-
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
+      font-family: sans-serif;
+      background-color: #f9fafb;
+      padding: 2rem;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      justify-content: center;
     }
-
     .container {
-      background-color: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
+      background: white;
       padding: 2rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      max-width: 600px;
+      border-radius: 0.75rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
       width: 100%;
+      max-width: 600px;
     }
-
-    h2 {
-      margin-bottom: 1rem;
-      color: var(--accent);
-      text-align: center;
-    }
-
     .input-group {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      justify-content: space-between;
     }
-
     .input-group label {
       flex: 1 1 45%;
       display: flex;
       flex-direction: column;
-      font-size: 0.9rem;
     }
-
-    input[type="number"] {
+    input {
       padding: 0.5rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-size: 1rem;
+      margin-top: 0.25rem;
     }
-
     button {
-      margin-top: 1.5rem;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      background-color: var(--accent);
+      margin-top: 1rem;
+      padding: 0.75rem;
+      width: 100%;
+      background: #3b82f6;
       color: white;
       border: none;
       border-radius: 0.5rem;
       cursor: pointer;
-      width: 100%;
     }
-
     canvas {
       margin-top: 2rem;
-      background-color: white;
-      border-radius: 0.5rem;
-      padding: 1rem;
+      background: white;
     }
   </style>
 </head>
@@ -86,22 +55,22 @@
   <div class="container">
     <h2>SIR 모델 시뮬레이터</h2>
     <div class="input-group">
-      <label>S (미감염자)
+      <label>S
         <input type="number" id="s" value="990">
       </label>
-      <label>I (감염자)
+      <label>I
         <input type="number" id="i" value="10">
       </label>
-      <label>R (회복자)
+      <label>R
         <input type="number" id="r" value="0">
       </label>
-      <label>감염률 (β)
+      <label>β
         <input type="number" id="beta" value="0.3" step="0.01">
       </label>
-      <label>회복률 (γ)
+      <label>γ
         <input type="number" id="gamma" value="0.1" step="0.01">
       </label>
-      <label>시뮬레이션 일 수
+      <label>Days
         <input type="number" id="days" value="100">
       </label>
     </div>
@@ -109,7 +78,6 @@
     <canvas id="sirChart" width="600" height="400"></canvas>
   </div>
 
-  <!-- ✅ 자바스크립트는 반드시 body 아래에 위치해야 작동함 -->
   <script>
     function simulate() {
       let S = parseFloat(document.getElementById("s").value);
@@ -133,7 +101,9 @@
       }
 
       const ctx = document.getElementById("sirChart").getContext("2d");
-      if (window.sirChart) window.sirChart.destroy();
+      if (window.sirChart && window.sirChart instanceof Chart) {
+        window.sirChart.destroy();
+      }
       window.sirChart = new Chart(ctx, {
         type: 'line',
         data: {
