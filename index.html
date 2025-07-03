@@ -108,6 +108,8 @@
     <button onclick="simulate()">시뮬레이션 시작</button>
     <canvas id="sirChart" width="600" height="400"></canvas>
   </div>
+
+  <!-- ✅ 자바스크립트는 반드시 body 아래에 위치해야 작동함 -->
   <script>
     function simulate() {
       let S = parseFloat(document.getElementById("s").value);
