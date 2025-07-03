@@ -6,48 +6,88 @@
   <title>SIR 모델 시뮬레이터</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --accent: #3b82f6;
+      --text: #1f2937;
+      --border: #e5e7eb;
+    }
+
     body {
-      font-family: sans-serif;
-      background-color: #f9fafb;
-      padding: 2rem;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       display: flex;
-      justify-content: center;
-    }
-    .container {
-      background: white;
+      flex-direction: column;
+      align-items: center;
       padding: 2rem;
-      border-radius: 0.75rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      width: 100%;
-      max-width: 600px;
     }
+
+    .container {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+
     .input-group {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
+      justify-content: space-between;
     }
+
     .input-group label {
       flex: 1 1 45%;
       display: flex;
       flex-direction: column;
+      font-size: 0.9rem;
     }
-    input {
+
+    input[type="number"] {
       padding: 0.5rem;
-      margin-top: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 1rem;
     }
+
     button {
-      margin-top: 1rem;
-      padding: 0.75rem;
-      width: 100%;
-      background: #3b82f6;
+      margin-top: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background-color: var(--accent);
       color: white;
       border: none;
       border-radius: 0.5rem;
       cursor: pointer;
+      width: 100%;
     }
+
     canvas {
       margin-top: 2rem;
-      background: white;
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    #result {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #374151;
+      background: #f1f5f9;
+      padding: 1rem;
+      border-radius: 0.5rem;
     }
   </style>
 </head>
@@ -55,29 +95,29 @@
   <div class="container">
     <h2>SIR 모델 시뮬레이터</h2>
     <div class="input-group">
-      <label>S
+      <label>S (미감염자 수)
         <input type="number" id="s" value="990">
       </label>
-      <label>I
+      <label>I (감염자 수)
         <input type="number" id="i" value="10">
       </label>
-      <label>R
+      <label>R (회복자 수)
         <input type="number" id="r" value="0">
       </label>
-      <label>β
+      <label>감염률 (β: 한 명이 퍼뜨릴 확률)
         <input type="number" id="beta" value="0.3" step="0.01">
       </label>
-      <label>γ
+      <label>회복률 (γ: 하루에 회복할 확률)
         <input type="number" id="gamma" value="0.1" step="0.01">
       </label>
-      <label>Days
+      <label>시뮬레이션 일 수 (t)
         <input type="number" id="days" value="100">
       </label>
     </div>
     <button onclick="simulate()">시뮬레이션 시작</button>
     <canvas id="sirChart" width="600" height="400"></canvas>
+    <div id="result"></div>
   </div>
-
   <script>
     function simulate() {
       let S = parseFloat(document.getElementById("s").value);
@@ -91,6 +131,9 @@
       let sArr = [S], iArr = [I], rArr = [R];
       let labels = [0];
 
+      let peakDay = 0;
+      let peakInfected = I;
+
       for (let t = 1; t <= days; t++) {
         let nextS = S - (beta * S * I) / N;
         let nextI = I + (beta * S * I) / N - gamma * I;
@@ -98,6 +141,10 @@
         S = nextS; I = nextI; R = nextR;
         sArr.push(S); iArr.push(I); rArr.push(R);
         labels.push(t);
+        if (I > peakInfected) {
+          peakInfected = I;
+          peakDay = t;
+        }
       }
 
       const ctx = document.getElementById("sirChart").getContext("2d");
@@ -109,9 +156,9 @@
         data: {
           labels: labels,
           datasets: [
-            { label: 'S', data: sArr, borderColor: 'blue', fill: false },
-            { label: 'I', data: iArr, borderColor: 'red', fill: false },
-            { label: 'R', data: rArr, borderColor: 'green', fill: false }
+            { label: 'S (미감염자 수)', data: sArr, borderColor: 'blue', fill: false },
+            { label: 'I (감염자 수)', data: iArr, borderColor: 'red', fill: false },
+            { label: 'R (회복자 수)', data: rArr, borderColor: 'green', fill: false }
           ]
         },
         options: {
@@ -124,6 +171,10 @@
           }
         }
       });
+
+      document.getElementById("result").innerText =
+        `📈 감염자 수 정점: ${peakInfected.toFixed(0)}명 (약 ${peakDay}일차 도달)\n` +
+        `✅ 최종 회복자 수: ${rArr[rArr.length - 1].toFixed(0)}명, 남은 미감염자 수: ${sArr[sArr.length - 1].toFixed(0)}명`;
     }
   </script>
 </body>
